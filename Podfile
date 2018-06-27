@@ -13,5 +13,6 @@ target 'KreativeTest' do
   pod 'ObjectMapper'
   pod 'NVActivityIndicatorView'
   pod 'SCLAlertView'
+  pod 'Cosmos'
 
 end

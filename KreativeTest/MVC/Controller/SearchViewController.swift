@@ -11,30 +11,96 @@ import SDWebImage
 import SwiftyJSON
 import SCLAlertView
 
-class SearchViewController: UIViewController,UITableViewDelegate,UITableViewDataSource,UISearchBarDelegate {
+class SearchViewController: UIViewController {
     
-    
-//    var arrRes = [[String:AnyObject]]()
+
     var movies = [Movies]()
     var index = 0
-    var pg = 1
-    var searchKeyword = "ab"
+    var searchKeyword = Constants.searchKeyword
+    var pickOption = [Constants.all,Constants.movie,Constants.series,Constants.episode]
+    var isDataLoading:Bool=false
+    var pickerViewTextField : UITextField = UITextField()
+    var pageNo:Int=0
+    var movieType = ""
+
     @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet weak var tableMovies: UITableView!
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.tableHeightAutomatic()
-        self.fetchData(pageNO: 1)
+        
+        self.createPickerView()
+        self.fetchData(pageNO: 1,isloaderNeeded: true)
+    }
+    
+    func createPickerView(){
+        
+        pickerViewTextField = UITextField(frame: CGRect.zero)
+        view.addSubview(pickerViewTextField)
+        let pickerView = UIPickerView(frame: CGRect(x: 0, y: 0, width: 0, height: 0))
+        pickerView.showsSelectionIndicator = true
+        pickerView.dataSource = self
+        pickerView.delegate = self
+        
+        pickerViewTextField.inputView = pickerView
+    }
+    
+    // MARK: - Navigation
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        let destVC = segue.destination as! DetailViewController
+        destVC.imdbID = movies[index].imdbID!
     }
     
     
-    // Table automatic height
-    func tableHeightAutomatic(){
-        tableMovies.estimatedRowHeight = 162
-        tableMovies.rowHeight = UITableViewAutomaticDimension
+    // MARK: -  API call
+    func fetchData(pageNO : Int, isloaderNeeded: Bool){
+
+        let manager = APIManager()
+        manager.request(with: MoviesEndPoints.getMovieList(searchKeyword: searchKeyword, pageNo: pageNO, movieType: self.movieType) , completion: { (Response) in
+
+            switch Response {
+                
+            case .success(let json):
+                if json["Search"] != JSON.null {
+                    
+                    for movie in json["Search"].arrayObject! {
+                        let mov = Movies(JSON: movie as! [String: Any])
+                        self.movies.append(mov!)
+                    }
+                    
+                    self.tableMovies.reloadData()
+                    break
+                }
+                else{
+                    if(isloaderNeeded){
+                         self.showAlert(error: json["Error"].string!)
+                    }
+
+                }
+
+            case .failure( _):
+                break
+                
+            }
+        }, isLoaderNeeded: isloaderNeeded)
+
     }
     
-    // MARK: - Table view data source
+    
+    // MARK :- Alert View
+    func showAlert(error:String){
+        SCLAlertView().showError(Constants.errorMessage, subTitle: error)
+    }
+     // MARK :- Actions
+    @IBAction func actionTypeFilter(_ sender: Any) {
+        self.pickerViewTextField.becomeFirstResponder()
+    }
+    
+}
+
+// MARK: - Table view data source
+extension SearchViewController:UITableViewDelegate,UITableViewDataSource {
+    
     
     func numberOfSections(in tableView: UITableView) -> Int {
         
@@ -56,12 +122,7 @@ class SearchViewController: UIViewController,UITableViewDelegate,UITableViewData
         cell.labelYear?.text = movie.Year
         cell.imagePoster.sd_setImage(with: URL(string: movie.Poster!), placeholderImage: UIImage(named: Constants.placeHolder))
         
-        if indexPath.row == movies.count - 1 {
-            self.fetchData(pageNO: pg+1)
-            self.pg = self.pg+1
-
-        }
-
+        
         return cell
     }
     
@@ -73,60 +134,65 @@ class SearchViewController: UIViewController,UITableViewDelegate,UITableViewData
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return UITableViewAutomaticDimension
     }
-    // MARK: - Navigation
-    
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        let destVC = segue.destination as! DetailViewController
-        destVC.imdbID = movies[index].imdbID!
+}
+ // MARK :- Picker View
+extension SearchViewController: UIPickerViewDataSource,UIPickerViewDelegate{
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
+        return 1
     }
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        return pickOption.count
+    }
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+        return pickOption[row]
+    }
+    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+        if row>0 {
+            movieType = pickOption[row]
+        }
+        else{
+            movieType = ""
+        }
+        self.pickerViewTextField.resignFirstResponder()
+        if(!searchKeyword.isEmpty)&&(searchKeyword.count>1){
+            movies.removeAll()
+            fetchData(pageNO: 1, isloaderNeeded: true)
+        }
+    }
+
+}
+
+// MARK: - Search bar Delegate
+extension SearchViewController:UISearchBarDelegate,UIScrollViewDelegate {
     
-    
-    // MARK: - Search bar Delegate
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         searchKeyword = searchBar.text!
         movies.removeAll()
-        self.fetchData(pageNO: 1)
+        self.fetchData(pageNO: 1,isloaderNeeded: true)
         self.view.endEditing(true)
     }
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        searchKeyword = searchText
+    }
     
+    //MARK :- Scrollview Delegate
     
-    // MARK: -  API call
-    func fetchData(pageNO : Int){
-//        arrRes.removeAll()
-
-        let manager = APIManager()
-        manager.request(with: MoviesEndPoints.getMovieList(searchKeyword: searchKeyword, pageNo: pageNO) , completion: { (Response) in
-            print(Response)
-            switch Response {
-                
-            case .success(let json):
-                if json["Search"] != JSON.null {
-                    
-                    for movie in json["Search"].arrayObject! {
-                        let mov = Movies(JSON: movie as! [String: Any])
-                        self.movies.append(mov!)
-                    }
-                    
-                    print(self.movies)
-                    self.tableMovies.reloadData()
-                    break
-                }
-                else{
-                    self.showAlert(error: json["Error"].string!)
-                }
-
-            case .failure( _):
-                break
-                
-            }
-        }, isLoaderNeeded: true)
-        
-        
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        isDataLoading = false
     }
     
     
-    // MARK :- Alert View
-    func showAlert(error:String){
-        SCLAlertView().showError(Constants.errorMessage, subTitle: error)
+    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+        
+        if ((self.tableMovies.contentOffset.y + self.tableMovies.frame.size.height) >= self.tableMovies.contentSize.height)
+        {
+            if !isDataLoading{
+                isDataLoading = true
+                self.pageNo=self.pageNo+1
+                fetchData(pageNO: pageNo,isloaderNeeded: false)
+            }
+        }
+        
+        
     }
 }

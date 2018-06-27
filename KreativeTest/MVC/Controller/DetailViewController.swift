@@ -9,6 +9,7 @@
 import UIKit
 import SwiftyJSON
 import SCLAlertView
+import Cosmos
 
 class DetailViewController: UIViewController {
     var imdbID : String = ""
@@ -22,6 +23,7 @@ class DetailViewController: UIViewController {
     @IBOutlet weak var labelActor: UILabel!
     @IBOutlet weak var labelPlot: UILabel!
     @IBOutlet weak var imagePoster: UIImageView!
+    @IBOutlet weak var viewRating: CosmosView!
     
     
     override func viewDidLoad() {
@@ -42,16 +44,13 @@ class DetailViewController: UIViewController {
         
         let manager = APIManager()
         manager.request(with: MoviesEndPoints.getMovieDetails(imdbID: imdbID) , completion: { (Response) in
-            print(Response)
+
             switch Response {
                 
             case .success(let json):
                 if json != JSON.null {
-                    print("The json is")
-                    print(json)
                     self.movie = MovieDetails(JSON: json.object as! [String: Any])
-                    
-                    print(self.movie!)
+
                     self.updateData()
                     
                 }
@@ -67,6 +66,7 @@ class DetailViewController: UIViewController {
         
         
     }
+    
     // MARK: -  Change UI
     func updateData(){
         
@@ -79,6 +79,8 @@ class DetailViewController: UIViewController {
         labelDirector.text = "Director: " + (movie?.Director)!
         lableLanguages.text = "Language: " + (movie?.Language)!
         imagePoster.sd_setImage(with: URL(string: (movie?.Poster)!), placeholderImage: UIImage(named: Constants.placeHolder))
+        viewRating.settings.fillMode = .precise
+        viewRating.rating = ((movie?.imdbRating! as NSString?)?.doubleValue)!/2
     }
     
     // MARK :- Alert View
