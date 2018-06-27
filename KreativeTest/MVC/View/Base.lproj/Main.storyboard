@@ -112,7 +112,7 @@
                                 </constraints>
                             </view>
                             <searchBar contentMode="redraw" barStyle="black" translatesAutoresizingMaskIntoConstraints="NO" id="eSF-oC-Cxc">
-                                <rect key="frame" x="0.0" y="72" width="319" height="48"/>
+                                <rect key="frame" x="0.0" y="72" width="331" height="48"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="48" id="0X6-Op-ySU"/>
                                 </constraints>
@@ -123,10 +123,7 @@
                                 </connections>
                             </searchBar>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gPp-Ig-xYd">
-                                <rect key="frame" x="319" y="72" width="48" height="48"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="48" id="ibN-cZ-8z5"/>
-                                </constraints>
+                                <rect key="frame" x="331" y="72" width="36" height="48"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="14"/>
                                 <state key="normal" title="TYPE">
                                     <color key="titleColor" red="0.074694178998470306" green="0.17673701047897339" blue="0.3077753484249115" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -183,9 +180,8 @@
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="66r-mG-1mh">
-                                        <rect key="frame" x="8" y="12" width="48" height="48"/>
+                                        <rect key="frame" x="8" y="12" width="42" height="48"/>
                                         <constraints>
-                                            <constraint firstAttribute="width" constant="48" id="Cbf-2o-SJ3"/>
                                             <constraint firstAttribute="height" constant="48" id="EfH-Nz-a0m"/>
                                         </constraints>
                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
@@ -203,6 +199,7 @@
                                     <constraint firstItem="MHx-Se-HCc" firstAttribute="centerX" secondItem="mh5-kT-PC1" secondAttribute="centerX" id="6ZC-1S-i3W"/>
                                     <constraint firstItem="66r-mG-1mh" firstAttribute="centerY" secondItem="MHx-Se-HCc" secondAttribute="centerY" id="Bb4-3t-neP"/>
                                     <constraint firstItem="66r-mG-1mh" firstAttribute="leading" secondItem="mh5-kT-PC1" secondAttribute="leading" constant="8" id="Fio-jt-wni"/>
+                                    <constraint firstAttribute="trailing" relation="greaterThanOrEqual" secondItem="66r-mG-1mh" secondAttribute="trailing" constant="20" symbolic="YES" id="lql-qs-QN1"/>
                                     <constraint firstAttribute="height" constant="72" id="x1D-M8-wCb"/>
                                 </constraints>
                             </view>
